@@ -1,0 +1,4 @@
+interface:
+  display_name: "公众号文章采集"
+  short_description: "用独立微信读书服务采集公众号文章并导出 Markdown 或 HTML"
+  default_prompt: "用 $wechat-article-collector 采集指定公众号的文章，或维护名单并设置采集周期。"
