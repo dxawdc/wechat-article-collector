@@ -1,6 +1,6 @@
 # 独立采集服务参考
 
-服务使用移植自 GDN 的微信读书采集模块 `service/integrations/weread.py`、`weread_browser.py` 和 `weread_captcha.py`。它没有 GDN 数据库、后台、AI 配置或模型接口。`scripts/run.py` 首次调用自动启动服务；服务只监听 `127.0.0.1`，通过本机自动生成的令牌认证，令牌不需由用户复制到 AI 对话。
+服务基于已成熟的微信读书采集模块 `service/integrations/weread.py`、`weread_browser.py` 和 `weread_captcha.py` 实现。`scripts/run.py` 首次调用自动启动服务；服务只监听 `127.0.0.1`，通过本机自动生成的令牌认证，令牌不需由用户复制到 AI 对话。
 
 | 能力 | 本地接口 |
 | --- | --- |
