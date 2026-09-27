@@ -1,16 +1,16 @@
 ---
 name: wechat-article-collector
-description: 通过随 skill 安装的独立微信读书采集服务，在 AI 对话中采集微信公众号文章、维护公众号列表、设置周期任务，并导出 Markdown 或 HTML；扫码、添加书架及 2041 人工验证由用户完成。不需要 GDN 服务或模型 API。
+description: 通过随 skill 安装的独立微信读书采集服务，在 AI 对话中采集微信公众号文章、维护公众号列表、设置周期任务，并导出 Markdown 或 HTML；扫码、添加书架及 2041 人工验证由用户完成。
 agent_created: true
 ---
 
 # 微信公众号文章采集
 
-此 skill 随包提供独立的**本地采集服务**，复用 GDN 已成熟的微信读书采集实现。它只处理微信读书登录、书架、公众号名单、文章采集、定时和文件导出。不要请求或配置任何 AI 模型 API，也不要调用完整 GDN 服务、微信公众号后台或另一套抓取器。本地服务仅监听 `127.0.0.1`，首次调用自动启动，并把会话、文章和任务保存在使用者本机。
+此 skill 随包提供独立的**本地采集服务**，基于已成熟的微信读书采集实现，处理微信读书登录、书架、公众号名单、文章采集、定时和文件导出。本地服务仅监听 `127.0.0.1`，首次调用自动启动，并把会话、文章和任务保存在使用者本机。
 
 ## 调用入口
 
-确定此 `SKILL.md` 所在目录，以下称 `<skill>`。Windows 运行 `py -3 <skill>\scripts\run.py ...`；macOS/Linux 用 `python3 <skill>/scripts/run.py ...`。需要 Python 3.11+。首次运行会为服务创建独立 Python 环境并安装依赖；没有 Chrome、Edge 或 Chromium 时会尝试安装 Playwright Chromium。之后用户直接在 AI 工具里用自然语言说要采集哪个公众号即可，不需单独部署 GDN 或填写 API Key。`doctor` 可检查本地服务；所有 CLI 命令返回 JSON。
+确定此 `SKILL.md` 所在目录，以下称 `<skill>`。Windows 运行 `py -3 <skill>\scripts\run.py ...`；macOS/Linux 用 `python3 <skill>/scripts/run.py ...`。需要 Python 3.11+。首次运行会为服务创建独立 Python 环境并安装依赖；没有 Chrome、Edge 或 Chromium 时会尝试安装 Playwright Chromium。之后用户直接在 AI 工具里用自然语言说要采集哪个公众号即可。`doctor` 可检查本地服务；所有 CLI 命令返回 JSON。
 
 ## 采集流程
 
@@ -35,7 +35,7 @@ agent_created: true
 
 会话、数据库、服务令牌和归档文件默认在使用者主目录 `.wechat-article-collector`；可用 `WEREAD_SKILL_DATA_DIR`、`WEREAD_SKILL_OUTPUT_DIR` 配置。`html` 是适合本地阅读的窄栏页，尽量内嵌公众号图片；若返回 `remoteImages`，说明有图片未能离线保存。`body-html` 是采集到的正文 HTML 原样片段，不代表微信读书整页响应。
 
-不要在对话、仓库或分享 ZIP 中包含微信读书会话、本地服务令牌、二维码和文章正文。本地服务令牌只用于本机 CLI 与服务通信，**不是 AI 模型 API Key**。故障或接口细节见 [本地服务参考](references/service.md)，安装方式见 [README](README.md)。
+不要在对话、仓库或分享 ZIP 中包含微信读书会话、本地服务令牌、二维码和文章正文。本地服务令牌只用于本机 CLI 与服务通信。故障或接口细节见 [本地服务参考](references/service.md)，安装方式见 [README](README.md)。
 
 ### 沙箱/受控环境下的已知问题
 
