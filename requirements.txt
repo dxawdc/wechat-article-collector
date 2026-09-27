@@ -1,0 +1,9 @@
+APScheduler==3.11.2
+beautifulsoup4==4.14.3
+fastapi==0.136.3
+markdownify==1.2.2
+playwright==1.62.0
+PyYAML==6.0.3
+qrcode[pil]==8.2
+requests==2.34.2
+uvicorn==0.48.0
