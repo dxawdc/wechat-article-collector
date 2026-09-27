@@ -145,7 +145,7 @@ def finish_job(client: CollectorClient, task_id: int, job_id: int | None, accoun
                     "window": {"since": since, "until": until}, "message": "采集任务尚未确认完成；请使用 resume 查询，不要重新入队"}
         if not pending and not completed and time.monotonic() - first_seen > 20:
             return {"status": "unconfirmed", "taskId": task_id, "jobId": job_id,
-                    "message": "本地采集队列中已无此任务且没有完成日志；请检查 GDN 服务状态"}
+                    "message": "本地采集队列中已无此任务且没有完成日志；请检查本地采集服务状态"}
         time.sleep(3)
 
 
