@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# 运行时与本地数据（会话、令牌、二维码、文章归档，均不入库）
+.cache/
+.wechat-article-collector/
+local-token
+service.json
+service.log
+*.partial.md
+*.body.html
+
+# 编辑器和系统
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
