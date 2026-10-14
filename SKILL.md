@@ -35,8 +35,16 @@ agent_created: true
 
 会话、数据库、服务令牌和归档文件默认在使用者主目录 `.wechat-article-collector`；可用 `WEREAD_SKILL_DATA_DIR`、`WEREAD_SKILL_OUTPUT_DIR` 配置。`html` 是适合本地阅读的窄栏页，尽量内嵌公众号图片；若返回 `remoteImages`，说明有图片未能离线保存。`body-html` 是采集到的正文 HTML 原样片段，不代表微信读书整页响应。
 
-不要在对话、仓库或分享 ZIP 中包含微信读书会话、本地服务令牌、二维码和文章正文。本地服务令牌只用于本机 CLI 与服务通信。故障或接口细节见 [本地服务参考](references/service.md)，安装方式见 [README](README.md)。
+不要在对话、仓库或分享 ZIP 中包含微信读书会话、本地服务令牌、二维码和文章正文。本地服务令牌只用于本机 CLI 与服务通信。故障或接口细节见 [本地服务参考](references/service.md)，运行时的排查见 [运维排查手册](references/troubleshooting.md)，安装方式见 [README](README.md)。
 
 ### 沙箱/受控环境下的已知问题
 
 在 WorkBuddy 等会对后台子进程做回收的受控环境里，`run.py` 用 `DETACHED_PROCESS` 启动的 uvicorn 服务可能在父进程结束后被回收，表现为每次 `run.py` 调用都冷启动新服务（`serviceUrl` 端口每次变化），登录轮询线程随进程丢失，扫码登录永不生效。应对：用宿主环境的「后台任务/常驻进程」机制直接托管 `python -m uvicorn service.main:app --host 127.0.0.1 --port <固定端口>`，再通过 `X-Collector-Key`（读数据目录 `local-token`）调 API 完成登录→采集→导出闭环，不要反复调用 `run.py`。首次装依赖若因超时失败，见 `ensure_runtime` 的补救提示。
+
+### 三个常见运行时问题（采集时注意）
+
+1. **登录会话会过期**：`status` 里 `login_status: true` 且 `saved_token: true` **不代表会话可用**——读书架时报「登录超时」即会话已过期（通常距上次 `authorized_at` 十几天后）。此时需重新走 `qrcode` → `qrcode-image` 让用户扫码，不要误以为「已登录」就反复重试采集。
+
+2. **滑块验证会反复触发**：连续抓取多篇文章正文会触发微信读书安全验证（错误码 `-2041`，`reason=captcha_required`），文章请求暂停 1800 秒。完成一次滑块只放行一小批正文请求，之后又会再次触发。属正常频控，不是登录失效；用户完成 `verificationUrl` 的滑块、跑 `check-verification` 确认 `article_channel_last_check_ok: true` 后继续即可，可能需重复 1-2 次。
+
+3. **正文可能缺失，需要逐轮补全**：首次采集只抓到标题/摘要、正文为空是常见现象（限流导致）。服务端会自动识别「正文为空的文章」并在下次 `run` 时补抓，无需特殊命令——重复运行同一个 `run` 即可，每轮通常只补全 2-3 篇，直到只剩真正无正文的条目。完整正文导出为 `.md`/`.html`，缺正文的只生成 `.partial.md`。完整排障见 [运维排查](references/troubleshooting.md)。

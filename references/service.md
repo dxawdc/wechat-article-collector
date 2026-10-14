@@ -23,3 +23,12 @@
 2. **表格无样式**：正文里的表格是标准 `<table><thead><th>…<tbody><td>…` 结构，但单元格里套了 `<section>`（自带 margin）。`render_html` 的 CSS 原本没有 `table` 相关规则，浏览器会把表格渲染成无边框、无内边距、内容挤成一排。修复方法：CSS 里补 `article table`（边框折叠、100% 宽、超宽横向滚动）、`article th,td`（边框+内边距）、表头浅灰底加粗、偶数行斑马纹，并清掉 `article table p/section` 的 margin。
 
 这两处修复都落在 `scripts/exporter.py`，后续采集任何公众号都会自动生效，无需每次手动处理。
+
+## 正文抓取与补全机制
+
+正文（`content`）不在文章列表里，需要按 `reviewId` 单独请求 `/web/mp/content?reviewId=...`（返回文章 HTML 页而非 JSON），再从 `#js_content` 或 `.rich_media_content` 提取。受微信读书频控影响，正文抓取可能只成功一部分，剩下的文章正文为空。
+
+- **每轮上限**：`service/config.py` 的 `WEREAD_CONTENT_MAX_PER_RUN`（默认 10，可用环境变量 `WEREAD_SKILL_CONTENT_MAX_PER_RUN` 调），且每篇正文请求有最小间隔（`WEREAD_REQUEST_MIN_INTERVAL_SECONDS`）。因此实际一轮往往只能补全 2-3 篇。
+- **自动补全**：`service/storage.py` 的 `known_articles()` 返回 `(known, missing)`，`missing` 是正文为空的 `source_id` 集合，作为 `content_pending_source_ids` 传给 `collect_articles()`。下次 `run` 会把这些空正文文章纳入 `selected_rows` 重新抓正文，无需单独命令，重复 `run` 即可逐步补全。
+- **重复条目**：同一篇文章在微信读书里常有多条 review 记录——短标题是列表项（通常无正文），长标题才是正文项。所以「短标题版空正文、长标题版已抓到正文」不代表采集失败，二者内容相同。真正无正文的是那些连正文项都抓不到的文章。
+- **频控触发滑块**：连续抓正文会触发 `-2041`（`captcha_required`），暂停 1800 秒；完成滑块后继续补全。判断是否卡住可查 `status` 的 `article_channel_retry_after_seconds` 与 `article_channel_last_check_reason`。
